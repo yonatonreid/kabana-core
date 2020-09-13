@@ -13,9 +13,8 @@ apt autoremove
 
 ### Curl Installation ###
 apt-get build-dep curl
-cd /usr/local/src && mkdir curl && cd /usr/local/src/curl || exit
-wget http://curl.haxx.se/download/curl-7.72.0.tar.bz2
-tar -xvjf curl-7.72.0.tar.bz2
+wget http://curl.haxx.se/download/curl-7.72.0.tar.bz2 -P /tmp
+tar -xvjf /tmp/curl-7.72.0.tar.bz2 -C /usr/local/src
 cd curl-7.72.0 || exit
 ./configure && make && make install
 ldconfig
@@ -39,10 +38,9 @@ chmod +x /etc/profile.d/maven.sh
 source /etc/profile.d/maven.sh
 
 ### Golang Installation ###
-cd /usr/local/src && mkdir golang && cd /usr/local/src/golang || exit
-wget https://golang.org/dl/go1.15.2.linux-amd64.tar.gz
-tar xvf go1.15.2.linux-amd64.tar.gz
-mv /usr/local/src/golang/go /usr/local/go
+wget https://golang.org/dl/go1.15.2.linux-amd64.tar.gz -P /tmp
+tar xvf go1.15.2.linux-amd64.tar.gz -C /usr/local/src
+mv /usr/local/src/go /usr/local/go
 echo "export PATH=$PATH:$(go env GOPATH)/bin" >> /root/.profile
 source /root/.profile
 
