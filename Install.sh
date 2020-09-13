@@ -1,4 +1,4 @@
-sudo sudo
+sudo su
 
 apt-get update && apt-get upgrade
 apt-get install -y gcc make autoconf libc-dev pkg-config automake libtool m4 build-essential dpkg-dev
@@ -17,6 +17,8 @@ tar -xvjf curl-7.50.2.tar.bz2
 cd curl-7.50.2
 ./configure && make && make install
 ldconfig
+ln -s /usr/local/bin/curl /usr/bin/curl
+rm -rf /tmp/curl
 
 sshAgentBinaryLocation=$(which ssh-agent)
 eval $($sshAgentBinaryLocation -s)
