@@ -1,4 +1,8 @@
-sudo su
+#!/bin/bash
+if [[ $(id -u) != 0 ]] ; then
+    echo "Must be run as root" >&2
+    exit 1
+fi
 
 ### Core Ubuntu Packages Installation ###
 apt-get update && apt-get upgrade
@@ -37,6 +41,24 @@ echo "export PATH=${M2_HOME}/bin:${PATH}" >> /etc/profile.d/maven.sh
 chmod +x /etc/profile.d/maven.sh
 source /etc/profile.d/maven.sh
 
+### Redis Installation ###
+apt install redis-server
+systemctl stop redis-server
+sed -e '/^supervised no/supervised systemd/' \
+    -e 's/^# *bind 127\.0\.0\.1 ::1/bind 127.0.0.1 ::1' \
+    /etc/redis/redis.conf >/etc/redis/redis.conf.new
+mv /etc/redis/redis.conf /etc/redis/redis.conf.$(date +%y%b%d-%H%M%S)
+mv /etc/redis/redis.conf.new /etc/redis/redis.conf
+systemctl start redis-server
+sleep 1
+if [[ "$( echo 'ping' | /usr/bin/redis-cli )" == "PONG" ]] ; then
+    echo "Redis Installed Successfully"
+else
+    echo "Redis Failed Installation"
+fi
+systemctl status redis
+systemctl status redis-server
+
 ### Golang Installation ###
 wget https://golang.org/dl/go1.15.2.linux-amd64.tar.gz -P /tmp
 tar xvf go1.15.2.linux-amd64.tar.gz -C /usr/local/src
@@ -55,3 +77,5 @@ sshAgentBinaryLocation=$(which ssh-agent)
 eval $($sshAgentBinaryLocation -s)
 sshAddBinaryLocation=$(which ssh-add)
 $sshAddBinaryLocation /root/.ssh/myssh
+
+exit 0
