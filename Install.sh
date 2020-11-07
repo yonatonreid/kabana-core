@@ -85,4 +85,109 @@ sshAddBinaryLocation=$(which ssh-add)
 $sshAddBinaryLocation /root/.ssh/id_rsa
 echo "SSH Key Added to SSH Agent"
 
+### AWS Cli Installation ###
+wget "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -P /tmp
+unzip /tmp/awscli-exe-linux-x86_64.zip
+./aws/install
+rm /tmp/awscli-exe-linux-x86_64.zip
+echo "AWS CLI Installed"
+
+### Apache Installation ###
+apt install apache2 apache2-dev libapache2-modsecurity
+cd /tmp && git clone https://github.com/sektioneins/suhosin.git
+cd suhosin
+phpize
+./configure --enable-suhosin-experimental
+make && make install
+service apache2 reload
+
+echo "<VirtualHost *:80>
+	DocumentRoot /srv/www/default
+	AllowEncodedSlashes On
+	<Directory /srv/www/default>
+		Options Indexes FollowSymLinks
+		DirectoryIndex index.php index.html
+		Order allow,deny
+		Allow from all
+		AllowOverride All
+	</Directory>
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>" > /etc/apache2/sites-available/000-default.conf
+
+a2ensite 000-default
+service apache2 reload
+echo "Apache Installed Successfully"
+
+### Lynis Installation ###
+
+cd /tmp && git clone https://github.com/CISOfy/lynis.git
+cd lynis;
+lynis audit system
+
+
+### PHP Installation ###
+
+apt-get install php7.4
+apt-get install php7.4-cli
+apt-get install libapache2-mod-php7.4
+apt-get install php7.4-amqp
+apt-get install php7.4-apcu
+apt-get install php7.4-ast
+apt-get install php7.4-bcmath
+apt-get install php7.4-bz2
+apt-get install php7.4-common
+apt-get install php7.4-curl
+apt-get install php7.4-dev
+apt-get install php7.4-enchant
+apt-get install php7.4-FFI
+apt-get install php7.4-ftp
+apt-get install php7.4-gd
+apt-get install php7.4-geoip
+apt-get install php7.4-gmp
+apt-get install php7.4-gnupg
+apt-get install php7.4-hash
+apt-get install php7.4-imagick
+
+wget https://phar.io/releases/phive.phar
+wget https://phar.io/releases/phive.phar.asc
+gpg --keyserver hkps.pool.sks-keyservers.net --recv-keys 0x9B2D5D79
+gpg --verify phive.phar.asc phive.phar
+chmod x phive.phar
+mv phive.phar bin
+php bin/phive.phar install phpunit --target bin phpunit
+php bin/phive.phar install phpdox --target bin phpdox
+php bin/phive.phar install phpstan --target bin phpstan
+php bin/phive.phar install dephpend --target bin dephpend
+php bin/phive.phar install phpbu --target bin phpbu
+php bin/phive.phar install phpdox --target bin phpdox
+php bin/phive.phar install phploc --target bin phploc
+php bin/phive.phar install phpcpd --target bin phpcpd
+php bin/phive.phar install composer-require-checker --target bin composer-require-checker
+php bin/phive.phar install phpab --target bin phpab
+php bin/phive.phar install carbon --target bin carbon
+
+
+cd /tmp && git clone https://github.com/m6w6/ext-raphf.git && cd ext-raphf || exit
+phpize && ./configure --with-php-config=/usr/bin/php-config7.4 && make && make install
+ldconfig
+echo "extension=raphf.so" >> /etc/php/7.4/mods-available/raphf.ini
+phpenmod raphf && service apache2 reload
+
+cd /tmp && git clone https://github.com/m6w6/ext-http.git
+cd ext-http
+phpize
+./configure --with-php-config=/usr/bin/php-config7.4
+
+phpenmod ampq apcu ast bcmath bz2 curl enchant FFI ftp gd geoip gmp gnupg hash imagick
+apache2ctl restart
+
+if [ -e /usr/local/bin/composer ]; then
+    /usr/local/bin/composer self-update
+else
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+fi
+
+sudo sed -i "s/memory_limit = 128M/memory_limit = 768M /g" /etc/php/7.4/apace/php.ini
+
 exit 0
